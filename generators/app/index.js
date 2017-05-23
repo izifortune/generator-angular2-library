@@ -175,6 +175,12 @@ module.exports = class extends Generator {
         props: this.props
       }
     );
+
+    // Copy src/tsconfig.spec.json
+    this.fs.copyTpl(
+      this.templatePath('src/_tsconfig.spec.json'),
+      this.destinationPath('src/tsconfig.spec.json')
+    );
   }
 
   install() {
