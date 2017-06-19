@@ -6,7 +6,8 @@ var gulp = require('gulp'),
   rename = require('gulp-rename'),
   del = require('del'),
   runSequence = require('run-sequence'),
-  inlineResources = require('./tools/gulp/inline-resources');
+  inlineResources = require('./tools/gulp/inline-resources'),
+  uglify = require('rollup-plugin-uglify');
 
 const rootFolder = path.join(__dirname);
 const srcFolder = path.join(rootFolder, 'src');
@@ -136,8 +137,14 @@ gulp.task('rollup:umd', function () {
       // See https://github.com/rollup/rollup/wiki/JavaScript-API#globals
       globals: {
         typescript: 'ts'
-      }
+      },
 
+      // https://github.com/TrySound/rollup-plugin-uglify to uglify the .umd
+      // For all the options you can have a look at
+      // https://github.com/mishoo/UglifyJS2#api-reference
+      plugins: [
+        uglify()
+      ]
     }))
     .pipe(rename('<%= props.libraryName.kebabCase %>.umd.js'))
     .pipe(gulp.dest(distFolder));
