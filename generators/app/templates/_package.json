@@ -9,7 +9,8 @@
     "docs:serve": "npm run docs:build -- -s",
     "docs:watch": "npm run docs:build -- -s -w",
     "lint": "tslint --type-check --project tsconfig.json src/**/*.ts",
-    "test": "tsc && karma start"
+    "test": "tsc && karma start",
+    "commit": "git-cz"
   },
   "repository": {
     "type": "git",
@@ -59,7 +60,13 @@
     "ts-node": "~2.0.0",
     "tslint": "~4.5.0",
     "typescript": "~2.2.0",
-    "zone.js": "^0.8.4"
+    "zone.js": "^0.8.4",
+    "commitizen": "^2.9.6"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   },
   "engines": {
     "node": ">=6.0.0"

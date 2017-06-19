@@ -137,6 +137,17 @@ This will generate a `dist` directory with:
 - `*.d.ts`: type definitions for you library
 - `sample-library.metadata.json`: metadata for your library to support AOT compilation 
 
+## Commit changes
+
+You can run
+
+```bash
+$ npm run commit
+```
+
+This will use (https://github.com/commitizen/cz-cli)[commitizen] using
+the `cz-conventional-changelog` for your commit message
+
 ## Generating documentation for your library
 
 From the root of your library directory, run:
