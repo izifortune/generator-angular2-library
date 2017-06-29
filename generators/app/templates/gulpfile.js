@@ -3,11 +3,12 @@ var gulp = require('gulp'),
   path = require('path'),
   ngc = require('@angular/compiler-cli/src/main').main,
   rollup = require('gulp-rollup'),
+  uglify = require('gulp-uglify'),
+  pump = require('pump'),
   rename = require('gulp-rename'),
   del = require('del'),
   runSequence = require('run-sequence'),
-  inlineResources = require('./tools/gulp/inline-resources'),
-  uglify = require('rollup-plugin-uglify');
+  inlineResources = require('./tools/gulp/inline-resources');
 
 const rootFolder = path.join(__dirname);
 const srcFolder = path.join(rootFolder, 'src');
@@ -137,17 +138,19 @@ gulp.task('rollup:umd', function () {
       // See https://github.com/rollup/rollup/wiki/JavaScript-API#globals
       globals: {
         typescript: 'ts'
-      },
-
-      // https://github.com/TrySound/rollup-plugin-uglify to uglify the .umd
-      // For all the options you can have a look at
-      // https://github.com/mishoo/UglifyJS2#api-reference
-      plugins: [
-        uglify()
-      ]
+      }
     }))
     .pipe(rename('<%= props.libraryName.kebabCase %>.umd.js'))
     .pipe(gulp.dest(distFolder));
+});
+
+gulp.task('uglify', function (cb) {
+  pump([
+    gulp.src(`${distFolder}/<%= props.libraryName.kebabCase %>.umd.js`),
+    uglify(),
+    rename('<%= props.libraryName.kebabCase %>.umd.min.js'),
+    gulp.dest(distFolder)
+  ], cb);
 });
 
 /**
@@ -198,6 +201,7 @@ gulp.task('compile', function () {
     'ngc',
     'rollup:fesm',
     'rollup:umd',
+    'uglify',
     'copy:build',
     'copy:manifest',
     'copy:readme',
