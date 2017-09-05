@@ -1,17 +1,19 @@
+'use strict';
+
 const setupPlayground =
   (generator) => {
     // Copy playground
     generator.fs.copyTpl(
-      generator.templatePath('_systemjs.config.js'),
-      generator.destinationPath('systemjs.config.js'),
+      generator.templatePath('playground/_systemjs.config.js'),
+      generator.destinationPath('playground/systemjs.config.js'),
       {
         props: generator.props
       }
     );
 
     generator.fs.copy(
-      generator.templatePath('systemjs-angular-loader.js'),
-      generator.destinationPath('systemjs-angular-loader.js')
+      generator.templatePath('playground/systemjs-angular-loader.js'),
+      generator.destinationPath('playground/systemjs-angular-loader.js')
     );
 
     generator.fs.copyTpl(
@@ -23,8 +25,8 @@ const setupPlayground =
     );
 
     generator.fs.copyTpl(
-      generator.templatePath('_index.html'),
-      generator.destinationPath('index.html'),
+      generator.templatePath('playground/_index.html'),
+      generator.destinationPath('playground/index.html'),
       {
         props: generator.props
       }
@@ -33,6 +35,11 @@ const setupPlayground =
     generator.fs.copy(
       generator.templatePath('playground/tsconfig.json'),
       generator.destinationPath('playground/tsconfig.json')
+    );
+
+    generator.fs.copy(
+      generator.templatePath('bs-config.json'),
+      generator.destinationPath('bs-config.json')
     );
   };
 

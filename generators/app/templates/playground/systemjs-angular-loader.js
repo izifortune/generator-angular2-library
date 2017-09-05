@@ -1,10 +1,15 @@
+'use strict';
+
 var templateUrlRegex = /templateUrl\s*:(\s*['"`](.*?)['"`]\s*)/gm;
 var stylesRegex = /styleUrls *:(\s*\[[^\]]*?\])/g;
 var stringRegex = /(['`"])((?:[^\\]\\\1|.)*?)\1/g;
 
-module.exports.translate = function(load){
-  if (load.source.indexOf('moduleId') != -1) return load;
+module.exports.translate = function (load){
+  if (load.source.indexOf('moduleId') !== -1) {
+    return load;
+  }
 
+  // eslint-disable-next-line
   var url = document.createElement('a');
   url.href = load.address;
 
@@ -13,6 +18,7 @@ module.exports.translate = function(load){
   basePathParts.pop();
   var basePath = basePathParts.join('/');
 
+  // eslint-disable-next-line
   var baseHref = document.createElement('a');
   baseHref.href = this.baseURL;
   baseHref = baseHref.pathname;
@@ -22,16 +28,16 @@ module.exports.translate = function(load){
   }
 
   load.source = load.source
-    .replace(templateUrlRegex, function(match, quote, url){
-      var resolvedUrl = url;
+    .replace(templateUrlRegex, function (match, quote, sourceUrl){
+      var resolvedUrl = sourceUrl;
 
-      if (url.startsWith('.')) {
-        resolvedUrl = basePath + url.substr(1);
+      if (sourceUrl.startsWith('.')) {
+        resolvedUrl = basePath + sourceUrl.substr(1);
       }
 
       return 'templateUrl: "' + resolvedUrl + '"';
     })
-    .replace(stylesRegex, function(match, relativeUrls) {
+    .replace(stylesRegex, function (match, relativeUrls) {
       var urls = [];
 
       while ((match = stringRegex.exec(relativeUrls)) !== null) {
@@ -42,7 +48,7 @@ module.exports.translate = function(load){
         }
       }
 
-      return "styleUrls: [" + urls.join(', ') + "]";
+      return 'styleUrls: [' + urls.join(', ') + ']';
     });
 
   return load;
