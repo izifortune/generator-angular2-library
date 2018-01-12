@@ -9,8 +9,9 @@ This generator aligns with the [official Angular Package Format](https://goo.gl/
 
 Watch [Jason Aden's talk](https://www.youtube.com/watch?v=unICbsPGFIA) to learn more about the Angular Package Format.
 
-More specifically, this generator:
+More specifically, the latest version of this generator:
 
+- supports Angular 5
 - creates and configures `package.json` for the development of your library
 - creates and configures a second `package.json` for the distribution of your library
 - creates and configures `tsconfig.json` for your editor during development
@@ -90,7 +91,7 @@ to automatically create all `*.js`, `*.d.ts` and `*.metadata.json` files in the 
 ```bash
 dist
 ├── index.d.ts                  # Typings for AOT compilation
-├── index.js                    # Flat ES Module (FESM) for us with webpack
+├── index.js                    # Flat ES Module (FESM) for use with webpack
 ├── lib.d.ts                    # Typings for AOT compilation
 ├── lib.metadata.json           # Metadata for AOT compilation
 ├── lib.umd.js                  # UMD bundle for use with Node.js, SystemJS or script tag
@@ -245,9 +246,21 @@ export class HomeComponent {
 
 To learn more about Angular Dependency Injection, check out the [Official Angular Documentation](https://angular.io/docs/ts/latest/cookbook/dependency-injection.html).
 
-## Consuming your library during development
+## Preview your library during development
 
-To consume your library before you publish it to npm, you can follow the following steps:
+To preview your library code during development, start the playground:
+
+```bash
+$ npm run playground
+```
+
+Changes to your library code will be updated live in the browser window:
+
+![playground](https://user-images.githubusercontent.com/1859381/30514111-576fcf4e-9b0f-11e7-837d-169d08667c2c.gif)
+
+## Consuming your library in a local application during development
+
+To consume your library in a local application before you publish it to npm, you can follow the following steps:
 
 1. Create your library:
   ```
@@ -369,6 +382,16 @@ To consume your library before you publish it to npm, you can follow the followi
     }
   }
   ```
+  
+When you npm link a library with peer dependencies, the [consuming application searches for the peer dependencies in the library's parent directories instead of the application's parent directories](http://codetunnel.io/you-can-finally-npm-link-packages-that-contain-peer-dependencies).
+
+If you get `Error: Unexpected value '[object Object]' imported by the module 'AppModule'. Please add a @NgModule annotation.`, then try:
+
+```
+$ ng serve --preserve-symlinks
+```
+
+to make sure the consuming application searches for the peer dependencies in the application's node_modules directory.  
    
 ## Frequently asked questions
 
@@ -376,7 +399,7 @@ To consume your library before you publish it to npm, you can follow the followi
 
 Currently, the generator does not create a custom Karma configuration for running unit tests.
 
-If your library requires a custom Karma setup, please check out [this tutorial on how to configure Karma for your libraray](https://github.com/raphael-volt/ng2-testable-lib) (Credits to [Raphael](https://github.com/raphael-volt)).
+If your library requires a custom Karma setup, please check out [this tutorial on how to configure Karma for your library](https://github.com/raphael-volt/ng2-testable-lib) (Credits to [Raphael](https://github.com/raphael-volt)).
 
 As soon as official recommendations are available on how to set up Karma for testing libraries, this generator will be updated accordingly.
 
@@ -442,6 +465,14 @@ or use a tilde to import a file from the nearest parent `node_modules` directory
 @import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
 ```
 
+#### How can I see which version of the generator I have installed
+
+From the command line, run:
+
+```
+$ npm ls -g --depth=1 2>/dev/null | grep generator-
+```
+
 #### How can I update my generator to the latest version?
 
 From the command line, run
@@ -450,6 +481,62 @@ From the command line, run
 $ yo
 ```
 and select the option *Update your generators*.
+
+#### What if my library depends on a third party library?
+
+If your library depends on a third party library such as Angular Material or PrimeNG, you don't have to include the third party library in your library.
+
+Instead, you should add the third party library as a peer dependency to the `peerDependencies` property in `src/package.json` of your library:
+
+```javascript
+"peerDependencies": {
+  "@angular/core": "^4.0.0",
+  "rxjs": "^5.1.0",
+  "zone.js": "^0.8.4"
+}
+```
+
+This causes a warning to be displayed when the consuming application runs `npm install` and does not have the third party library installed that your library depends on.
+
+The generator already adds `@angular/core`, `rxjs` and `zone.js` as peer dependencies for you by default.
+
+Consider the following scenario where your library depends on a third party library called "PrimeNG".
+
+In your Angular library:
+
+1. run `npm install primeng --save` to install PrimeNG and add it as a devDependency to `package.json` in the root directory
+2. add PrimeNG as a peerDependency in `src/package.json`, *NOT* as dependency or devDependency (`src/package.json` is the package.json that is distributed with your library, so you must specify primeng as peer dependency here, *NOT* in the package.json file in the root of your library)
+3. import the necessary PrimeNG Angular module(s) in your library Angular module
+4. write code that uses PrimeNG components
+5. build your library and publish it (or link it locally)
+
+In the consuming Angular application
+
+1. run `npm install yourlibrary` to install your library (which should display a warning if PrimeNG is not installed) or link it locally
+2. run `npm install primeng` to install PrimeNG if it is not installed yet
+3. import the necessary PrimeNG Angular module(s) in your Angular application module (usually `AppModule`) (this step is not needed if your library exports the PrimeNG module(s) in its module metadata)
+4. import your library module in your Angular application module (usually `AppModule`)
+5. you can now use your library components
+
+To see a fully documented example, check out [this guide](./guides/import_non_angular_libraries.md).
+
+#### How can I upgrade my library to support Angular 5
+
+Version 12 or later of this generator supports Angular 5.
+
+If you have an existing library that was generated with an earlier version of this generator:
+
+1. update the versions of the Angular packages in `package.json` to Angular 5 ([example](https://github.com/jvandemo/generator-angular2-library/blob/master/generators/app/templates/_package.json))
+2. replace the `ngc` script in your `gulpfile.js` with:
+
+```
+gulp.task('ngc', function () {
+  ngc([ '--project', `${tmpFolder}/tsconfig.es5.json` ]);
+  return Promise.resolve()
+});
+```
+
+See [#230](https://github.com/jvandemo/generator-angular2-library/issues/230) for more information.
 
 ## Issues
 
@@ -468,6 +555,36 @@ $ npm run test
 MIT © [Jurgen Van de Moere](http://www.jvandemo.com)
 
 ## Change log
+
+### v12.0.0
+
+- Updated packages to Angular 5
+- Updated ngc gulp script (See [#230](https://github.com/jvandemo/generator-angular2-library/issues/230)) (Credits to [Filip Lauc](https://github.com/flauc))
+
+### v11.4.0
+
+- Updated rollup and gulp-rollup configuration (See [#190](https://github.com/jvandemo/generator-angular2-library/pull/190)) (Credits to [Daniel Geri](https://github.com/danielgeri))
+
+### v11.3.0
+
+- Added playground (See [#146](https://github.com/jvandemo/generator-angular2-library/pull/146)) (Credits to [Fabrizio Fortunato](https://github.com/izifortune))
+
+### v11.2.0
+
+- Added guide on how depend on third party library (See [#172](https://github.com/jvandemo/generator-angular2-library/pull/172)) (Credits to [Ka Tam](https://github.com/kktam))
+
+### v11.1.0
+
+- Added `main` and `jsnext:main` properties to package.json
+
+### v11.0.3
+
+- Added FAQ on how to add third party library
+- Updated jest support (See [#91](https://github.com/jvandemo/generator-angular2-library/pull/158)) (Credits to [Fabrizio Fortunato](https://github.com/izifortune))
+
+### v11.0.2
+
+- Fixed package.json for [Jest](https://facebook.github.io/jest/) (Credits to [Fabrizio Fortunato](https://github.com/izifortune))
 
 ### v11.0.1
 
