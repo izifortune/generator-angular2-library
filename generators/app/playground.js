@@ -32,9 +32,12 @@ const setupPlayground =
       }
     );
 
-    generator.fs.copy(
-      generator.templatePath('playground/tsconfig.json'),
-      generator.destinationPath('playground/tsconfig.json')
+    generator.fs.copyTpl(
+      generator.templatePath('playground/_tsconfig.json'),
+      generator.destinationPath('playground/tsconfig.json'),
+      {
+        props: generator.props
+      }
     );
 
     generator.fs.copy(
